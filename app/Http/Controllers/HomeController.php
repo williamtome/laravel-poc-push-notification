@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use LaravelFCM\Message\OptionsBuilder;
 use LaravelFCM\Message\PayloadDataBuilder;
@@ -48,7 +49,9 @@ class HomeController extends Controller
     public function sendPush(Request $request)
     {
         $userId = $request->id;
-        $this->broadcastMessage('Paciente Teste', '22/05/2020 11:00', $userId);
+        $user = User::find($userId);
+        $data = Carbon::createFromFormat('Y-m-d H:i:s', now())->format('d/m/Y H:i:s');
+        $this->broadcastMessage($user->name, $data, $userId);
         return redirect()->back();
     }
 
@@ -57,7 +60,7 @@ class HomeController extends Controller
         $optionBuilder = new OptionsBuilder();
         $optionBuilder->setTimeToLive(60*20);
 
-        $notificationBuilder = new PayloadNotificationBuilder('Paciente na sala de espera.');
+        $notificationBuilder = new PayloadNotificationBuilder('Notificação do usuário: '.$nome);
         $notificationBuilder->setBody('Doutor(a), o paciente '.$nome.' está aguardando o início da consulta marcada para '.$dataHora.'.')
                             ->setSound('default')
                             ->setClickAction("{{ url('/') }}");
